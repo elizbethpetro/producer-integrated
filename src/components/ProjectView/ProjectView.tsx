@@ -293,9 +293,40 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
             )}
 
             {activeTab === 'files' && (
-              <div className="p-5 space-y-4">
+              <div className="p-5 space-y-6">
+                {/* Stage Folders */}
+                <div className="grid grid-cols-5 gap-4">
+                  {['Development', 'Pre-Production', 'Production', 'Post-Production', 'Delivery'].map((stageName) => (
+                    <div
+                      key={stageName}
+                      className="flex items-center gap-3 rounded-xl border border-[var(--color-border)] bg-black/20 px-4 py-3 hover:border-white/20 transition-colors cursor-pointer"
+                    >
+                      <div className="shrink-0 w-10 h-10 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center">
+                        <svg className="w-5 h-5 text-[var(--color-text-muted)]" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{stageName}</div>
+                        <div className="text-xs text-[var(--color-text-muted)]">0 MB</div>
+                      </div>
+                      <button
+                        type="button"
+                        className="shrink-0 p-1 rounded hover:bg-white/10 text-[var(--color-text-muted)] hover:text-white transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <circle cx="12" cy="6" r="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <circle cx="12" cy="18" r="2" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Upload Area */}
                 <div
-                  className="h-32 rounded-xl border border-dashed border-[var(--color-border)] bg-black/10 flex items-center justify-center text-sm text-[var(--color-text-secondary)]"
+                  className="h-24 rounded-xl border border-dashed border-[var(--color-border)] bg-black/10 flex items-center justify-center text-sm text-[var(--color-text-secondary)] hover:border-white/20 transition-colors cursor-pointer"
                   onDragOver={(e) => {
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'copy';
@@ -304,8 +335,14 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
                     e.preventDefault();
                     addFiles(e.dataTransfer.files);
                   }}
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  Drag & drop files here
+                  <span className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Upload files or drag & drop
+                  </span>
                 </div>
 
                 <input
@@ -316,8 +353,10 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
                   onChange={(e) => addFiles(e.target.files)}
                 />
 
-                {project.files.length > 0 ? (
+                {/* Uploaded Files */}
+                {project.files.length > 0 && (
                   <div className="space-y-2">
+                    <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">Uploaded Files</div>
                     {project.files.slice(0, 8).map((f) => (
                       <div
                         key={f.id}
@@ -336,8 +375,6 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
                       </div>
                     )}
                   </div>
-                ) : (
-                  <div className="text-sm text-[var(--color-text-muted)]">No files yet.</div>
                 )}
               </div>
             )}
