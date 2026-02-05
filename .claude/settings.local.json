@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(gh auth:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: Producer project management app\n\n- React + TypeScript + Vite setup\n- Project plan with 5 stages \\(Development, Pre-Production, Production, Post-Production, Delivery\\)\n- Tabbed interface for Project Plan and Files\n- Team and Workstation management\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(brew install:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git remote:*)",
+      "Bash(gh api:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
