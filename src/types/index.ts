@@ -49,7 +49,10 @@ export interface ProjectFileItem {
 export interface ProjectMember {
   id: string;
   name: string;
+  email?: string;
   role?: string;
+  lastActivity?: string;
+  online?: boolean;
 }
 
 export interface WorkstationLink {

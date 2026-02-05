@@ -12,12 +12,31 @@ function makeId() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+// Mock available members for the team modal
+const AVAILABLE_MEMBERS: ProjectMember[] = [
+  { id: '1', name: 'Carrie Gifford', email: 'carrie.gifford@email.com', lastActivity: '02/04/2026 • 10:58 PM', online: true },
+  { id: '2', name: 'Elizabeth Petro', email: 'elizabeth.petro@email.com', lastActivity: '02/04/2026 • 10:45 PM', online: true },
+  { id: '3', name: 'Abdul Tasnim Alam', email: 'abdul.t@saffronic.com', lastActivity: '10/31/2025 • 07:45 AM', online: false },
+  { id: '4', name: 'ADC Creative', email: 'adc-prod@adc-creative.com', lastActivity: '02/04/2026 • 06:54 AM', online: false },
+  { id: '5', name: 'Aisha Mohammad', email: 'aishaafzalmohammad123@gmail.com', lastActivity: '11/13/2025 • 01:45 PM', online: false },
+  { id: '6', name: 'AJ McKay', email: 'mckayanthony948@gmail.com', lastActivity: '06/05/2025 • 09:36 AM', online: false },
+  { id: '7', name: 'Arjun Sarkaar', email: 'arjun07391@gmail.com', lastActivity: '02/04/2026 • 10:58 PM', online: false },
+];
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [activeTab, setActiveTab] = useState<'plan' | 'files'>('plan');
-  const [memberName, setMemberName] = useState('');
-  const [memberRole, setMemberRole] = useState('');
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [wsLabel, setWsLabel] = useState('');
   const [wsUrl, setWsUrl] = useState('');
 
@@ -52,19 +71,9 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
     onUpdate({ ...project, files: [...next, ...project.files] });
   };
 
-  const addMember = () => {
-    const name = memberName.trim();
-    if (!name) return;
-
-    const next: ProjectMember = {
-      id: makeId(),
-      name,
-      role: memberRole.trim() || undefined,
-    };
-
-    onUpdate({ ...project, members: [next, ...project.members] });
-    setMemberName('');
-    setMemberRole('');
+  const addMember = (member: ProjectMember) => {
+    if (project.members.some((m) => m.id === member.id)) return;
+    onUpdate({ ...project, members: [...project.members, member] });
   };
 
   const addWorkstation = () => {
@@ -385,49 +394,35 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
         <div className="space-y-6">
           {/* Team */}
           <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-            <div className="px-5 py-4 border-b border-[var(--color-border)]">
-              <div className="text-sm font-semibold">Team</div>
-              <div className="text-xs text-[var(--color-text-muted)] mt-1">Members with access to this project.</div>
+            <div className="px-5 py-4 flex items-center justify-between">
+              <div className="text-base font-semibold">Team</div>
+              <button
+                type="button"
+                onClick={() => setIsTeamModalOpen(true)}
+                className="px-4 py-2 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-white/20 text-sm font-medium transition-colors"
+              >
+                Add
+              </button>
             </div>
 
-            <div className="p-5 space-y-3">
-              <div className="grid grid-cols-1 gap-2">
-                <input
-                  value={memberName}
-                  onChange={(e) => setMemberName(e.target.value)}
-                  placeholder="Member name"
-                  className="w-full px-3 py-2 rounded-lg bg-black/10 border border-[var(--color-border)] text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)]"
-                />
-                <input
-                  value={memberRole}
-                  onChange={(e) => setMemberRole(e.target.value)}
-                  placeholder="Role (optional)"
-                  className="w-full px-3 py-2 rounded-lg bg-black/10 border border-[var(--color-border)] text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)]"
-                />
-                <button
-                  type="button"
-                  onClick={addMember}
-                  className="px-3 py-2 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-sm"
-                >
-                  Add member
-                </button>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                {project.members.length > 0 ? (
-                  project.members.map((m) => (
-                    <div
-                      key={m.id}
-                      className="rounded-lg border border-[var(--color-border)] bg-black/10 px-3 py-2"
-                    >
-                      <div className="text-sm">{m.name}</div>
-                      {m.role && <div className="text-xs text-[var(--color-text-muted)]">{m.role}</div>}
+            <div className="px-5 pb-5 space-y-4">
+              {project.members.length > 0 ? (
+                project.members.map((m) => (
+                  <div key={m.id} className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="h-12 w-12 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center text-sm font-semibold">
+                        {getInitials(m.name)}
+                      </div>
+                      {m.online && (
+                        <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-[var(--color-surface)]" />
+                      )}
                     </div>
-                  ))
-                ) : (
-                  <div className="text-sm text-[var(--color-text-muted)]">No members yet.</div>
-                )}
-              </div>
+                    <div className="text-sm text-[var(--color-text-secondary)]">{m.name}</div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-[var(--color-text-muted)]">No members yet.</div>
+              )}
             </div>
           </div>
 
@@ -481,6 +476,86 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
           </div>
         </div>
       </div>
+
+      {/* Team Modal */}
+      {isTeamModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setIsTeamModalOpen(false)}
+          />
+          <div className="relative bg-[var(--color-background)] border border-[var(--color-border)] rounded-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-[var(--color-border)] grid grid-cols-[1fr_1fr_1fr_80px] gap-4 text-xs text-[var(--color-text-muted)] uppercase tracking-wider">
+              <div className="flex items-center gap-1">
+                Member <span className="text-[10px]">↑</span>
+              </div>
+              <div className="flex items-center gap-1">
+                Email <span className="text-[10px]">↑</span>
+              </div>
+              <div className="flex items-center gap-1">
+                Last activity <span className="text-[10px]">↑</span>
+              </div>
+              <div>Access</div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto">
+              {AVAILABLE_MEMBERS.map((member) => {
+                const isAdded = project.members.some((m) => m.id === member.id);
+                return (
+                  <div
+                    key={member.id}
+                    className="px-6 py-4 grid grid-cols-[1fr_1fr_1fr_80px] gap-4 items-center border-b border-[var(--color-border)] hover:bg-white/5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center text-sm font-semibold shrink-0">
+                        {getInitials(member.name)}
+                      </div>
+                      <div className="text-sm truncate">{member.name.toUpperCase()}</div>
+                    </div>
+                    <div className="text-sm text-[var(--color-text-muted)] truncate">{member.email}</div>
+                    <div className="text-sm text-[var(--color-text-muted)]">{member.lastActivity}</div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => addMember(member)}
+                        disabled={isAdded}
+                        className={
+                          'p-2 rounded-lg transition-colors ' +
+                          (isAdded
+                            ? 'text-emerald-500 cursor-default'
+                            : 'text-[var(--color-text-muted)] hover:text-white hover:bg-white/10')
+                        }
+                        title={isAdded ? 'Already added' : 'Add to project'}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {isAdded ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                          )}
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-[var(--color-border)] flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsTeamModalOpen(false)}
+                className="px-6 py-2 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-white/20 text-sm font-medium transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
