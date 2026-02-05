@@ -37,6 +37,8 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
 
   const [activeTab, setActiveTab] = useState<'plan' | 'files'>('plan');
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isWorkstationModalOpen, setIsWorkstationModalOpen] = useState(false);
+  const [workstationMode, setWorkstationMode] = useState<'edit' | 'custom' | null>(null);
   const [wsLabel, setWsLabel] = useState('');
   const [wsUrl, setWsUrl] = useState('');
 
@@ -428,50 +430,71 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
 
           {/* Workstations */}
           <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-            <div className="px-5 py-4 border-b border-[var(--color-border)]">
-              <div className="text-sm font-semibold">Workstations</div>
-              <div className="text-xs text-[var(--color-text-muted)] mt-1">Links to connected machines.</div>
+            <div className="px-5 py-4 flex items-center justify-between">
+              <div className="text-base font-semibold">Workstations</div>
+              <div className="text-sm text-[var(--color-text-muted)]">{project.workstations.length}</div>
             </div>
 
-            <div className="p-5 space-y-3">
-              <input
-                value={wsLabel}
-                onChange={(e) => setWsLabel(e.target.value)}
-                placeholder="Label (e.g. Studio iMac)"
-                className="w-full px-3 py-2 rounded-lg bg-black/10 border border-[var(--color-border)] text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)]"
-              />
-              <input
-                value={wsUrl}
-                onChange={(e) => setWsUrl(e.target.value)}
-                placeholder="Link (e.g. https://...)"
-                className="w-full px-3 py-2 rounded-lg bg-black/10 border border-[var(--color-border)] text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)]"
-              />
-              <button
-                type="button"
-                onClick={addWorkstation}
-                className="px-3 py-2 rounded-lg border border-[var(--color-border)] hover:border-white/20 text-sm"
-              >
-                Add workstation link
-              </button>
-
-              <div className="space-y-2 pt-2">
-                {project.workstations.length > 0 ? (
-                  project.workstations.map((w) => (
+            <div className="px-5 pb-5">
+              {project.workstations.length > 0 ? (
+                <div className="space-y-3">
+                  {project.workstations.map((w) => (
                     <a
                       key={w.id}
                       href={w.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="block rounded-lg border border-[var(--color-border)] bg-black/10 px-3 py-2 hover:border-white/20"
+                      className="flex items-center gap-3 p-3 rounded-xl border border-[var(--color-border)] bg-black/10 hover:border-white/20 transition-colors"
                     >
-                      <div className="text-sm">{w.label}</div>
-                      <div className="text-xs text-[var(--color-text-muted)] truncate">{w.url}</div>
+                      <div className="h-10 w-10 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center">
+                        <svg className="w-5 h-5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium">{w.label}</div>
+                        <div className="text-xs text-[var(--color-text-muted)] truncate">{w.url}</div>
+                      </div>
                     </a>
-                  ))
-                ) : (
-                  <div className="text-sm text-[var(--color-text-muted)]">No workstations yet.</div>
-                )}
-              </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setIsWorkstationModalOpen(true)}
+                    className="w-full py-2 text-sm text-[var(--color-text-muted)] hover:text-white transition-colors"
+                  >
+                    + Add workstation
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWorkstationMode('edit');
+                      setIsWorkstationModalOpen(true);
+                    }}
+                    className="aspect-square rounded-xl border border-[var(--color-border)] bg-black/10 hover:border-white/20 flex flex-col items-center justify-center gap-2 transition-colors"
+                  >
+                    <svg className="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span className="text-xs text-[var(--color-text-muted)]">Edit Workstation</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWorkstationMode('custom');
+                      setIsWorkstationModalOpen(true);
+                    }}
+                    className="aspect-square rounded-xl border border-[var(--color-border)] bg-black/10 hover:border-white/20 flex flex-col items-center justify-center gap-2 transition-colors"
+                  >
+                    <svg className="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span className="text-xs text-[var(--color-text-muted)]">Custom Workstation</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -551,6 +574,73 @@ export function ProjectView({ project, onBack, onUpdate }: ProjectViewProps) {
                 className="px-6 py-2 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-white/20 text-sm font-medium transition-colors"
               >
                 OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Workstation Modal */}
+      {isWorkstationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => {
+              setIsWorkstationModalOpen(false);
+              setWorkstationMode(null);
+              setWsLabel('');
+              setWsUrl('');
+            }}
+          />
+          <div className="relative bg-[var(--color-background)] border border-[var(--color-border)] rounded-2xl w-full max-w-md p-6">
+            <h2 className="text-lg font-semibold mb-4">
+              {workstationMode === 'edit' ? 'Edit Workstation' : 'Custom Workstation'}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-[var(--color-text-muted)] mb-1">Label</label>
+                <input
+                  value={wsLabel}
+                  onChange={(e) => setWsLabel(e.target.value)}
+                  placeholder="e.g. Studio iMac"
+                  className="w-full px-3 py-2 rounded-lg bg-black/10 border border-[var(--color-border)] text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--color-text-muted)] mb-1">URL</label>
+                <input
+                  value={wsUrl}
+                  onChange={(e) => setWsUrl(e.target.value)}
+                  placeholder="e.g. https://..."
+                  className="w-full px-3 py-2 rounded-lg bg-black/10 border border-[var(--color-border)] text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)]"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsWorkstationModalOpen(false);
+                  setWorkstationMode(null);
+                  setWsLabel('');
+                  setWsUrl('');
+                }}
+                className="px-4 py-2 rounded-lg border border-[var(--color-border)] hover:border-white/20 text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  addWorkstation();
+                  setIsWorkstationModalOpen(false);
+                  setWorkstationMode(null);
+                }}
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-sm transition-colors"
+              >
+                Add Workstation
               </button>
             </div>
           </div>
